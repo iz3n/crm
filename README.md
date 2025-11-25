@@ -2,6 +2,25 @@
 
 A high-performance Django REST API for managing customer contacts with comprehensive benchmarking tools to measure and optimize database query performance.
 
+## 🌿 Repository Branches
+
+This repository contains three branches, each implementing a different optimization strategy:
+
+- **[`main`](https://github.com/iz3n/crm/tree/main)** - **Baseline (No Optimization)**
+  - Standard Django ORM queries without additional optimizations
+  - Serves as the baseline for performance comparison
+
+- **[`optimize_index`](https://github.com/iz3n/crm/tree/optimize_index)** - **Index Optimization**
+  - Strategic database indexes on frequently queried fields
+  - 30-70% improvement on filtered/sorted queries
+
+- **[`optimize_index_trgm`](https://github.com/iz3n/crm/tree/optimize_index_trgm)** - **pg_trgm Optimization**
+  - PostgreSQL trigram extension for advanced text search
+  - Query cancellation token support
+  - 50-90% improvement on text search queries
+
+> **Note:** Each branch contains its own README with branch-specific documentation. Switch between branches to compare different optimization strategies.
+
 ## 📋 Table of Contents
 
 - [Overview](#overview)
