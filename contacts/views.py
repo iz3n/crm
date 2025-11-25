@@ -9,9 +9,10 @@ from django.db.models import Q
 from django.core.exceptions import RequestAborted
 from contacts.models import AppUser, Address, CustomerRelationship
 from contacts.serializers import ContactListSerializer
+from contacts.mixins import QueryCancellationMixin
 
 
-class ContactViewSet(viewsets.ReadOnlyModelViewSet):
+class ContactViewSet(QueryCancellationMixin, viewsets.ReadOnlyModelViewSet):
     """
     ViewSet for listing and retrieving contacts with filtering, sorting, and pagination.
     
@@ -19,6 +20,7 @@ class ContactViewSet(viewsets.ReadOnlyModelViewSet):
     - Filtering by any field from AppUser, Address, or CustomerRelationship
     - Single and multi-field sorting (comma-separated fields)
     - Pagination support
+    - Query cancellation and timeout
     
     Sorting Examples:
     - Single field: ?ordering=-created
@@ -28,7 +30,8 @@ class ContactViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = AppUser.objects.select_related('address', 'relationship').all()
     serializer_class = ContactListSerializer
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter, filters.SearchFilter]
-
+    query_timeout = 30  # Query timeout in seconds (configurable)
+    
     # Define filterable fields from all 3 tables
     filterset_fields = {
         # AppUser fields
@@ -75,22 +78,78 @@ class ContactViewSet(viewsets.ReadOnlyModelViewSet):
     def get_queryset(self):
         """
         Optimize queryset with select_related to avoid N+1 queries.
-        """        
-        queryset = AppUser.objects.select_related('address', 'relationship').all()        
+        Includes cancellation token support.
+        """
+        # Check for cancellation before executing query
+        self.check_cancellation(self.request)
+        
+        queryset = AppUser.objects.select_related('address', 'relationship').all()
+        
+        # Additional custom filtering can be added here if needed
+        # For example, filtering by name combination
+        name_filter = self.request.query_params.get('name', None)
+        if name_filter:
+            queryset = queryset.filter(
+                Q(first_name__icontains=name_filter) | Q(last_name__icontains=name_filter)
+            )
+        
         return queryset
+    
+    def list(self, request, *args, **kwargs):
+        """
+        Override list method to add cancellation context.
+        """
+        # Check for cancellation token
+        cancellation_token = self._get_query_param(request, '_cancel')
+        if cancellation_token:
+            request._cancelled = True
+            return Response(
+                {'detail': 'Request cancelled'},
+                status=499  # Client Closed Request
+            )
+        
+        with self.get_cancellation_context(request):
+            return super().list(request, *args, **kwargs)
+    
+    def retrieve(self, request, *args, **kwargs):
+        """
+        Override retrieve method to add cancellation context.
+        """
+        # Check for cancellation token
+        cancellation_token = self._get_query_param(request, '_cancel')
+        if cancellation_token:
+            request._cancelled = True
+            return Response(
+                {'detail': 'Request cancelled'},
+                status=499  # Client Closed Request
+            )
+        
+        with self.get_cancellation_context(request):
+            return super().retrieve(request, *args, **kwargs)
     
     @action(detail=False, methods=['get'])
     def stats(self, request):
         """
         Endpoint to get statistics about the contacts.
+        Includes cancellation support.
         """
-        total_count = AppUser.objects.count()
-        with_address = AppUser.objects.exclude(address__isnull=True).count()
-        with_relationship = AppUser.objects.exclude(relationship__isnull=True).count()
+        # Check for cancellation token
+        cancellation_token = self._get_query_param(request, '_cancel')
+        if cancellation_token:
+            request._cancelled = True
+            return Response(
+                {'detail': 'Request cancelled'},
+                status=499  # Client Closed Request
+            )
         
-        return Response({
-            'total_contacts': total_count,
-            'contacts_with_address': with_address,
-            'contacts_with_relationship': with_relationship,
-        })
+        with self.get_cancellation_context(request):
+            total_count = AppUser.objects.count()
+            with_address = AppUser.objects.exclude(address__isnull=True).count()
+            with_relationship = AppUser.objects.exclude(relationship__isnull=True).count()
+            
+            return Response({
+                'total_contacts': total_count,
+                'contacts_with_address': with_address,
+                'contacts_with_relationship': with_relationship,
+            })
 

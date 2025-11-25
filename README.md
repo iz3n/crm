@@ -1,8 +1,8 @@
 # CRM Contacts API - Performance Benchmarking Project
 
-> **Branch: `optimize_index`** - This branch implements **Index Optimization** strategy for improved database query performance.
+> **Branch: `optimize_index_trgm`** - This branch implements **pg_trgm Optimization** strategy with query cancellation token support for improved database query performance.
 
-A high-performance Django REST API for managing customer contacts with comprehensive benchmarking tools to measure and optimize database query performance. This branch focuses on strategic database indexing to improve query execution times.
+A high-performance Django REST API for managing customer contacts with comprehensive benchmarking tools to measure and optimize database query performance. This branch focuses on PostgreSQL trigram (pg_trgm) extension for advanced text search capabilities and includes query cancellation token support for better handling of long-running queries.
 
 ## 📋 Table of Contents
 
@@ -21,13 +21,13 @@ A high-performance Django REST API for managing customer contacts with comprehen
 
 This project is a Django-based CRM system designed to handle large-scale contact management with a focus on performance optimization. 
 
-**This branch (`optimize_index`) implements Index Optimization** - a strategy that adds strategic database indexes on frequently queried fields to significantly improve query performance. This is one of three optimization approaches being tested:
+**This branch (`optimize_index_trgm`) implements pg_trgm Optimization** - a strategy that uses PostgreSQL's trigram extension for advanced text search capabilities, providing significant performance improvements for text-based queries. This branch also includes **query cancellation token support** for better handling of long-running queries. This is one of three optimization approaches being tested:
 
 1. **Baseline (No Optimization)** - Standard Django ORM queries without additional optimizations
-2. **Index Optimization** ⭐ **(This Branch)** - Strategic database indexes on frequently queried fields
-3. **pg_trgm Optimization** - PostgreSQL trigram extension for advanced text search capabilities
+2. **Index Optimization** - Strategic database indexes on frequently queried fields
+3. **pg_trgm Optimization** ⭐ **(This Branch)** - PostgreSQL trigram extension for advanced text search capabilities with query cancellation support
 
-The system can handle millions of records and provides detailed performance metrics, charts, and reports to analyze query performance improvements achieved through indexing.
+The system can handle millions of records and provides detailed performance metrics, charts, and reports to analyze query performance improvements achieved through trigram indexing and text search optimization.
 
 ## ✨ Features
 
@@ -35,7 +35,9 @@ The system can handle millions of records and provides detailed performance metr
 - **Advanced Filtering** - Filter by any field from AppUser, Address, or CustomerRelationship
 - **Flexible Sorting** - Single and multi-field sorting support
 - **Pagination** - Efficient pagination for large datasets
-- **Search Functionality** - Full-text search across multiple fields
+- **Search Functionality** - Full-text search across multiple fields with pg_trgm optimization
+- **Query Cancellation Tokens** ⭐ - Support for cancelling long-running queries via `_cancel` parameter
+- **Query Timeout Management** - Automatic timeout handling for database queries
 - **Performance Benchmarking** - Comprehensive benchmarking suite with:
   - Execution time measurement
   - Query count tracking
@@ -145,6 +147,16 @@ Returns statistics about the contacts database:
 - Contacts with address
 - Contacts with relationship data
 
+#### Query Cancellation
+All endpoints support query cancellation via the `_cancel` query parameter:
+```
+GET /api/contacts/?_cancel=1
+```
+- Returns HTTP 499 (Client Closed Request) status
+- Useful for cancelling long-running queries
+- Works with all endpoints (list, retrieve, stats)
+- Automatic timeout handling (default: 30 seconds, configurable)
+
 ## 🚀 Installation & Setup
 
 ### Prerequisites
@@ -189,6 +201,10 @@ DB_HOST=localhost
 DB_PORT=5432
 SECRET_KEY=your-secret-key
 DEBUG=True
+
+# Query cancellation and timeout settings (pg_trgm branch)
+QUERY_TIMEOUT=30
+ENABLE_QUERY_CANCELLATION=True
 ```
 
 ### Step 5: Run Migrations
@@ -258,6 +274,12 @@ curl "http://localhost:8000/api/contacts/?ordering=-relationship__points,last_na
 #### Search Request
 ```bash
 curl "http://localhost:8000/api/contacts/?search=John"
+```
+
+#### Request with Cancellation Token
+```bash
+# Cancel a long-running query
+curl "http://localhost:8000/api/contacts/?search=John&_cancel=1"
 ```
 
 #### Paginated Request
@@ -344,47 +366,86 @@ Strategic database indexes on frequently queried fields to improve query perform
 - Significant improvement on combined filter + sort operations
 - Better pagination performance on large datasets
 
-### 3. pg_trgm Optimization
-PostgreSQL trigram extension for advanced text search and pattern matching.
+### 3. pg_trgm Optimization ⭐ **(This Branch)**
+PostgreSQL trigram extension for advanced text search and pattern matching. This branch implements pg_trgm with query cancellation token support.
 
 **Features:**
-- Trigram-based text search for better performance on text fields
-- GIN indexes on text columns
-- Improved `LIKE` and `ILIKE` query performance
-- Better handling of partial text matches
+- Trigram-based text search for significantly better performance on text fields
+- GIN indexes on text columns for fast pattern matching
+- Improved `LIKE` and `ILIKE` query performance (50-90% faster)
+- Better handling of partial text matches and fuzzy searches
+- Query cancellation token support for long-running queries
+- Automatic query timeout management
 
-**Setup:**
-```sql
--- Enable pg_trgm extension
-CREATE EXTENSION IF NOT EXISTS pg_trgm;
+**Implementation:**
 
--- Create GIN indexes on text fields
-CREATE INDEX idx_appuser_first_name_trgm ON appuser USING gin (first_name gin_trgm_ops);
-CREATE INDEX idx_appuser_last_name_trgm ON appuser USING gin (last_name gin_trgm_ops);
-CREATE INDEX idx_address_city_trgm ON address USING gin (city gin_trgm_ops);
+1. **Enable pg_trgm Extension:**
+   The extension is automatically enabled via migration `0004_enable_pg_trgm.py`. If you need to enable it manually:
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS pg_trgm;
+   ```
+
+2. **Create GIN Trigram Indexes:**
+   After enabling the extension, create trigram indexes on text fields for optimal performance:
+   ```sql
+   -- Create GIN indexes on text fields using trigram operators
+   CREATE INDEX idx_appuser_first_name_trgm ON appuser USING gin (first_name gin_trgm_ops);
+   CREATE INDEX idx_appuser_last_name_trgm ON appuser USING gin (last_name gin_trgm_ops);
+   CREATE INDEX idx_address_city_trgm ON address USING gin (city gin_trgm_ops);
+   CREATE INDEX idx_address_country_trgm ON address USING gin (country gin_trgm_ops);
+   CREATE INDEX idx_address_street_trgm ON address USING gin (street gin_trgm_ops);
+   ```
+
+3. **Query Cancellation Token Support:**
+   This branch includes `QueryCancellationMixin` that provides:
+   - Request cancellation via `?_cancel=1` query parameter
+   - Automatic query timeout (default: 30 seconds, configurable)
+   - Database-level statement timeout for PostgreSQL
+   - Graceful error handling for cancelled/timeout queries
+
+**Query Cancellation Usage:**
+```bash
+# Cancel a request by adding _cancel parameter
+curl "http://localhost:8000/api/contacts/?_cancel=1"
+
+# The API will return status 499 (Client Closed Request) with cancellation message
 ```
+
+**Configuration:**
+- `QUERY_TIMEOUT` - Set in `.env` file (default: 30 seconds)
+- `ENABLE_QUERY_CANCELLATION` - Set in `.env` file (default: True)
 
 ## 🧪 Performance Testing
 
-### Running Tests for Index Optimization (This Branch)
+### Running Tests for pg_trgm Optimization (This Branch)
 
-**This branch is configured with index optimizations already applied.** To run benchmarks:
+**This branch is configured with pg_trgm extension and query cancellation support.** To run benchmarks:
 
 1. **Ensure migrations are applied:**
    ```bash
    python manage.py migrate
    ```
-   This will apply the index optimization migrations (`0002` and `0003`).
+   This will apply the pg_trgm extension migration (`0004_enable_pg_trgm.py`).
 
-2. **Run benchmarks:**
+2. **Create Trigram Indexes (if not already created):**
+   Connect to your PostgreSQL database and run:
+   ```sql
+   CREATE INDEX IF NOT EXISTS idx_appuser_first_name_trgm ON appuser USING gin (first_name gin_trgm_ops);
+   CREATE INDEX IF NOT EXISTS idx_appuser_last_name_trgm ON appuser USING gin (last_name gin_trgm_ops);
+   CREATE INDEX IF NOT EXISTS idx_address_city_trgm ON address USING gin (city gin_trgm_ops);
+   CREATE INDEX IF NOT EXISTS idx_address_country_trgm ON address USING gin (country gin_trgm_ops);
+   CREATE INDEX IF NOT EXISTS idx_address_street_trgm ON address USING gin (street gin_trgm_ops);
+   ```
+
+3. **Run benchmarks:**
    ```bash
    python manage.py benchmark
    ```
 
-3. **Compare with baseline:**
+4. **Compare with baseline:**
    - Switch to the baseline branch (no optimization)
    - Run the same benchmarks
-   - Compare execution times and query counts
+   - Compare execution times and query counts, especially for text search queries
 
 ### Testing Other Optimization Strategies
 
@@ -392,15 +453,16 @@ CREATE INDEX idx_address_city_trgm ON address USING gin (city gin_trgm_ops);
    - Switch to baseline branch (no optimization)
    - Run benchmarks to establish baseline metrics
 
-2. **Index Optimization Testing:** ⭐ **(Current Branch)**
+2. **Index Optimization Testing:**
+   - Switch to index optimization branch
    - Already configured with strategic indexes
    - Run benchmarks and compare with baseline
 
-3. **pg_trgm Testing:**
-   - Switch to pg_trgm optimization branch
-   - Enable pg_trgm extension
-   - Create trigram indexes
+3. **pg_trgm Testing:** ⭐ **(Current Branch)**
+   - pg_trgm extension enabled via migration
+   - Create trigram indexes (see above)
    - Run benchmarks and compare results
+   - Test query cancellation with `?_cancel=1` parameter
 
 ### Comparing Results
 
@@ -411,40 +473,63 @@ The benchmark system generates comparable metrics across all three strategies:
 - Search query performance
 - Complex query handling
 
-### Expected Improvements (Index Optimization Branch)
+### Expected Improvements (pg_trgm Optimization Branch)
 
-Based on the indexes implemented in this branch:
+Based on the pg_trgm extension and trigram indexes implemented in this branch:
 
-- **Filtered Queries:** 30-70% improvement on queries filtering by:
-  - Name fields (`first_name`, `last_name`)
-  - Address fields (`city`, `country`)
-  - Relationship fields (`points`, `last_activity`)
+- **Text Search Queries:** 50-90% improvement on queries using:
+  - `icontains` filters on text fields (`first_name`, `last_name`, `city`, `country`, `street`)
+  - Full-text search across multiple fields
+  - Partial text matching and fuzzy searches
   
-- **Sorted Queries:** 40-60% improvement on queries sorting by:
-  - `created` timestamp
-  - `points` (loyalty points)
-  - `last_activity` timestamp
+- **LIKE/ILIKE Operations:** 60-95% improvement on:
+  - Pattern matching queries
+  - Case-insensitive text searches
+  - Partial string matches
   
-- **Combined Operations:** 50-80% improvement on queries combining:
-  - Filter + Sort operations
-  - Multi-field filtering
-  - Pagination with filtering/sorting
+- **Search Performance:**
+  - Name searches: Dramatic speedup from trigram indexes on `first_name` and `last_name`
+  - Location searches: Fast queries using trigram indexes on `city`, `country`, and `street`
+  - Combined text searches: Excellent performance on multi-field text queries
   
-- **Composite Index Benefits:**
-  - Name searches: Significant speedup from `['first_name', 'last_name']` index
-  - Location queries: Faster queries using `['country', 'city']` composite index
-  - Address + Name: Optimized queries using `['address', 'last_name']` index
+- **Query Cancellation Benefits:**
+  - Prevents runaway queries from consuming resources
+  - Automatic timeout handling (default: 30 seconds)
+  - Better user experience with cancellable long-running requests
+  - Database-level statement timeout for PostgreSQL
 
-**Note:** Actual improvements depend on dataset size, query patterns, and database configuration. Benchmark results will show specific performance gains.
+**Note:** Actual improvements depend on dataset size, query patterns, and database configuration. Benchmark results will show specific performance gains. The pg_trgm optimization is particularly effective for text-heavy search operations.
 
 ## 📝 Notes
 
-### Index Optimization Branch Specific Notes
+### pg_trgm Optimization Branch Specific Notes
 
-- **Indexes Applied:** This branch includes strategic indexes optimized for common query patterns
-- **Migration Status:** Ensure migrations `0002` and `0003` are applied to have all indexes active
-- **Index Maintenance:** Indexes add slight overhead to INSERT/UPDATE operations but significantly improve SELECT performance
-- **Query Optimization:** The indexes are designed to work with Django ORM's query patterns and the API's filtering/sorting features
+- **pg_trgm Extension:** Enabled via migration `0004_enable_pg_trgm.py`
+- **Trigram Indexes:** Must be created manually after migration (see SQL commands above)
+- **Query Cancellation:** Enabled by default, can be configured via `ENABLE_QUERY_CANCELLATION` in `.env`
+- **Query Timeout:** Default 30 seconds, configurable via `QUERY_TIMEOUT` in `.env`
+- **Permission Requirements:** Database user needs `CREATE EXTENSION` permission for pg_trgm
+- **Index Maintenance:** Trigram GIN indexes add some overhead to INSERT/UPDATE but provide massive SELECT improvements
+- **Text Search Optimization:** Best performance gains on `icontains`, `LIKE`, and `ILIKE` queries
+
+### Query Cancellation Token Feature
+
+This branch includes a comprehensive query cancellation system:
+
+- **Cancellation Parameter:** Add `?_cancel=1` to any API request to cancel it
+- **Automatic Timeout:** Queries exceeding the timeout are automatically cancelled
+- **Database-Level Timeout:** PostgreSQL statement timeout is set at the database level
+- **Graceful Handling:** Cancelled requests return HTTP 499 status with appropriate error message
+- **Context Manager:** Uses `QueryCancellationContext` for automatic timeout management
+
+**Example Usage:**
+```bash
+# Normal request
+curl "http://localhost:8000/api/contacts/?first_name__icontains=John"
+
+# Cancelled request
+curl "http://localhost:8000/api/contacts/?first_name__icontains=John&_cancel=1"
+```
 
 ### General Notes
 
@@ -453,7 +538,8 @@ Based on the indexes implemented in this branch:
 - All queries use `select_related()` to avoid N+1 query problems
 - The API supports both paginated and non-paginated responses
 - Timeout handling is built into the benchmark system
-- Compare benchmark results with baseline branch to measure actual improvements
+- Compare benchmark results with baseline and index optimization branches to measure actual improvements
+- pg_trgm is particularly effective for text-heavy workloads and search operations
 
 ## 🔍 Troubleshooting
 

@@ -4,32 +4,32 @@
     "total_pages_available": 3000,
     "pages_tested": [
       1,
-      95,
-      452,
-      606,
-      1257,
+      558,
+      587,
+      669,
+      801,
+      989,
+      1333,
       1500,
-      1721,
-      2464,
-      2737,
-      2847,
-      2870,
-      2911,
+      1735,
+      2199,
+      2581,
+      2812,
       3000
     ],
     "total_items": 3000000,
     "total_items_fetched": 650,
-    "total_time_ms": 6805.522680282593,
-    "avg_time_per_page_ms": 465.7069536355826,
-    "min_time_per_page_ms": 70.61338424682617,
-    "max_time_per_page_ms": 857.13791847229,
+    "total_time_ms": 5485.543966293335,
+    "avg_time_per_page_ms": 372.8478138263409,
+    "min_time_per_page_ms": 71.44379615783691,
+    "max_time_per_page_ms": 682.7661991119385,
     "total_queries": 26,
     "avg_queries_per_page": 2.0
   },
   "pages": [
     {
       "page": 1,
-      "execution_time_ms": 70.61338424682617,
+      "execution_time_ms": 71.44379615783691,
       "query_count": 2,
       "result_count": 50,
       "status_code": 200,
@@ -38,8 +38,8 @@
       "has_next": true
     },
     {
-      "page": 95,
-      "execution_time_ms": 119.61841583251953,
+      "page": 558,
+      "execution_time_ms": 208.36949348449707,
       "query_count": 2,
       "result_count": 50,
       "status_code": 200,
@@ -48,8 +48,8 @@
       "has_next": true
     },
     {
-      "page": 452,
-      "execution_time_ms": 185.93192100524902,
+      "page": 587,
+      "execution_time_ms": 204.23555374145508,
       "query_count": 2,
       "result_count": 50,
       "status_code": 200,
@@ -58,8 +58,8 @@
       "has_next": true
     },
     {
-      "page": 606,
-      "execution_time_ms": 223.60968589782715,
+      "page": 669,
+      "execution_time_ms": 220.8712100982666,
       "query_count": 2,
       "result_count": 50,
       "status_code": 200,
@@ -68,8 +68,28 @@
       "has_next": true
     },
     {
-      "page": 1257,
-      "execution_time_ms": 358.02412033081055,
+      "page": 801,
+      "execution_time_ms": 248.52657318115234,
+      "query_count": 2,
+      "result_count": 50,
+      "status_code": 200,
+      "error": null,
+      "total_count": 3000000,
+      "has_next": true
+    },
+    {
+      "page": 989,
+      "execution_time_ms": 289.60275650024414,
+      "query_count": 2,
+      "result_count": 50,
+      "status_code": 200,
+      "error": null,
+      "total_count": 3000000,
+      "has_next": true
+    },
+    {
+      "page": 1333,
+      "execution_time_ms": 350.65555572509766,
       "query_count": 2,
       "result_count": 50,
       "status_code": 200,
@@ -79,7 +99,7 @@
     },
     {
       "page": 1500,
-      "execution_time_ms": 400.05016326904297,
+      "execution_time_ms": 377.46405601501465,
       "query_count": 2,
       "result_count": 50,
       "status_code": 200,
@@ -88,8 +108,8 @@
       "has_next": true
     },
     {
-      "page": 1721,
-      "execution_time_ms": 468.89352798461914,
+      "page": 1735,
+      "execution_time_ms": 425.6870746612549,
       "query_count": 2,
       "result_count": 50,
       "status_code": 200,
@@ -98,8 +118,8 @@
       "has_next": true
     },
     {
-      "page": 2464,
-      "execution_time_ms": 598.7489223480225,
+      "page": 2199,
+      "execution_time_ms": 521.2087631225586,
       "query_count": 2,
       "result_count": 50,
       "status_code": 200,
@@ -108,8 +128,8 @@
       "has_next": true
     },
     {
-      "page": 2737,
-      "execution_time_ms": 666.9046878814697,
+      "page": 2581,
+      "execution_time_ms": 598.6778736114502,
       "query_count": 2,
       "result_count": 50,
       "status_code": 200,
@@ -118,28 +138,8 @@
       "has_next": true
     },
     {
-      "page": 2847,
-      "execution_time_ms": 803.5068511962891,
-      "query_count": 2,
-      "result_count": 50,
-      "status_code": 200,
-      "error": null,
-      "total_count": 3000000,
-      "has_next": true
-    },
-    {
-      "page": 2870,
-      "execution_time_ms": 857.13791847229,
-      "query_count": 2,
-      "result_count": 50,
-      "status_code": 200,
-      "error": null,
-      "total_count": 3000000,
-      "has_next": true
-    },
-    {
-      "page": 2911,
-      "execution_time_ms": 641.0720348358154,
+      "page": 2812,
+      "execution_time_ms": 647.512674331665,
       "query_count": 2,
       "result_count": 50,
       "status_code": 200,
@@ -149,7 +149,7 @@
     },
     {
       "page": 3000,
-      "execution_time_ms": 660.078763961792,
+      "execution_time_ms": 682.7661991119385,
       "query_count": 2,
       "result_count": 50,
       "status_code": 200,

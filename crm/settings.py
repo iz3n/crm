@@ -146,3 +146,8 @@ REST_FRAMEWORK = {
         'rest_framework.filters.SearchFilter',
     ],
 }
+
+
+# Query timeout settings (in seconds)
+QUERY_TIMEOUT = config('QUERY_TIMEOUT', default=30, cast=int)
+ENABLE_QUERY_CANCELLATION = config('ENABLE_QUERY_CANCELLATION', default=True, cast=bool)
