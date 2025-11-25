@@ -150,7 +150,7 @@ Returns statistics about the contacts database:
 
 ### Step 1: Clone the Repository
 ```bash
-git clone <repository-url>
+git clone git@github.com:iz3n/crm.git
 ```
 
 ### Step 2: Create Virtual Environment
