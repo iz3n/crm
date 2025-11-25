@@ -1,0 +1,272 @@
+[
+  {
+    "test": "initial_list_load",
+    "use_pagination": true,
+    "page_size": 1000,
+    "execution_time_ms": 394.49238777160645,
+    "query_count": 2,
+    "status_code": 200,
+    "result_count": 50,
+    "error": null
+  },
+  {
+    "test": "filter_by_name",
+    "use_pagination": true,
+    "filter_value": "Paul",
+    "execution_time_ms": 269.24633979797363,
+    "query_count": 2,
+    "status_code": 200,
+    "result_count": 50,
+    "error": null
+  },
+  {
+    "test": "sort_by_attribute",
+    "use_pagination": true,
+    "ordering": "-created",
+    "execution_time_ms": 66.07723236083984,
+    "query_count": 2,
+    "status_code": 200,
+    "result_count": 50,
+    "error": null
+  },
+  {
+    "test": "sort_by_attribute",
+    "use_pagination": true,
+    "ordering": "relationship__points",
+    "execution_time_ms": 1745.3033924102783,
+    "query_count": 2,
+    "status_code": 200,
+    "result_count": 50,
+    "error": null
+  },
+  {
+    "test": "sort_by_attribute",
+    "use_pagination": true,
+    "ordering": "address__city",
+    "execution_time_ms": 1585.3893756866455,
+    "query_count": 2,
+    "status_code": 200,
+    "result_count": 50,
+    "error": null
+  },
+  {
+    "test": "multi_field_sort",
+    "use_pagination": true,
+    "ordering": "-relationship__points,last_name,first_name",
+    "execution_time_ms": 1541.2442684173584,
+    "query_count": 2,
+    "status_code": 200,
+    "result_count": 50,
+    "error": null
+  },
+  {
+    "test": "multi_field_sort",
+    "use_pagination": true,
+    "ordering": "address__country,address__city,-created",
+    "execution_time_ms": 1710.3865146636963,
+    "query_count": 2,
+    "status_code": 200,
+    "result_count": 50,
+    "error": null
+  },
+  {
+    "test": "filter_and_sort",
+    "use_pagination": true,
+    "filter_field": "city",
+    "filter_value": "Lake Arthur",
+    "ordering": "-relationship__points",
+    "execution_time_ms": 104.30145263671875,
+    "query_count": 2,
+    "status_code": 200,
+    "result_count": 50,
+    "error": null
+  },
+  {
+    "test": "multiple_filters",
+    "use_pagination": true,
+    "execution_time_ms": 300.0836372375488,
+    "query_count": 2,
+    "status_code": 200,
+    "result_count": 50,
+    "error": null
+  },
+  {
+    "test": "search",
+    "use_pagination": true,
+    "search_term": "Paul",
+    "execution_time_ms": 1643.3489322662354,
+    "query_count": 2,
+    "status_code": 200,
+    "result_count": 50,
+    "error": null
+  },
+  {
+    "test": "complex_query",
+    "use_pagination": true,
+    "execution_time_ms": 261.31677627563477,
+    "query_count": 2,
+    "status_code": 200,
+    "result_count": 50,
+    "error": null
+  },
+  {
+    "test": "pagination_selected_pages",
+    "page_size": 1000,
+    "total_pages_available": 3000,
+    "pages_tested": [
+      1,
+      41,
+      226,
+      742,
+      904,
+      941,
+      1012,
+      1500,
+      1790,
+      1963,
+      2726,
+      2931,
+      3000
+    ],
+    "total_items": 3000000,
+    "total_items_fetched": 650,
+    "total_time_ms": 5815.611362457275,
+    "avg_time_per_page_ms": 390.5511636000413,
+    "min_time_per_page_ms": 73.78935813903809,
+    "max_time_per_page_ms": 744.1563606262207,
+    "total_queries": 26,
+    "avg_queries_per_page": 2.0,
+    "page_results": [
+      {
+        "page": 1,
+        "execution_time_ms": 73.78935813903809,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      },
+      {
+        "page": 41,
+        "execution_time_ms": 103.63245010375977,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      },
+      {
+        "page": 226,
+        "execution_time_ms": 198.6250877380371,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      },
+      {
+        "page": 742,
+        "execution_time_ms": 266.054630279541,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      },
+      {
+        "page": 904,
+        "execution_time_ms": 323.9443302154541,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      },
+      {
+        "page": 941,
+        "execution_time_ms": 312.79754638671875,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      },
+      {
+        "page": 1012,
+        "execution_time_ms": 301.4249801635742,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      },
+      {
+        "page": 1500,
+        "execution_time_ms": 417.7582263946533,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      },
+      {
+        "page": 1790,
+        "execution_time_ms": 458.62531661987305,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      },
+      {
+        "page": 1963,
+        "execution_time_ms": 489.55535888671875,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      },
+      {
+        "page": 2726,
+        "execution_time_ms": 645.7042694091797,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      },
+      {
+        "page": 2931,
+        "execution_time_ms": 741.0972118377686,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      },
+      {
+        "page": 3000,
+        "execution_time_ms": 744.1563606262207,
+        "query_count": 2,
+        "result_count": 50,
+        "status_code": 200,
+        "error": null,
+        "total_count": 3000000,
+        "has_next": true
+      }
+    ]
+  }
+]
